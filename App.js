@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View, Button, TextInput, Icon } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput, ScrollView, FlatList } from 'react-native';
 
 export default function App() {
   const [text, setText] = useState({});
@@ -14,15 +14,15 @@ export default function App() {
   function saveInputHandler() {
     const UID = new Date().getTime() + Math.random().toString(36);
 
-    if(text.length > 0 && !edit) {
-      setTasks(currentTasks => [...currentTasks, { id: UID, value: text }]);
+    if (text.length > 0 && !edit) {
+      setTasks(currentTasks => [...currentTasks, { key: UID, value: text }]);
       setText('');
     }
 
-    if(text.length > 0 && edit) { 
+    if (text.length > 0 && edit) {
       console.log(text, edit);
       setTasks(currentTasks => {
-        const index = currentTasks.findIndex(task => task.id === edit.id);
+        const index = currentTasks.findIndex(task => task.key === edit.key);
         currentTasks[index].value = text;
         return currentTasks;
       });
@@ -36,7 +36,7 @@ export default function App() {
   function deleteTaskHandler(selected) {
     if (edit) return null;
     setTasks(currentTasks => {
-      return currentTasks.filter((current) => current.id !== selected.id);
+      return currentTasks.filter((current) => current.key !== selected.key);
     });
     setDeleted(currentDeleted => [...currentDeleted, selected]);
   }
@@ -44,7 +44,7 @@ export default function App() {
   function undoDeleteHandler(selected) {
     setTasks(currentTasks => [...currentTasks, selected]);
     setDeleted(currentDeleted => {
-      return currentDeleted.filter((current) => current.id !== selected.id);
+      return currentDeleted.filter((current) => current.key !== selected.key);
     })
   }
 
@@ -68,17 +68,16 @@ export default function App() {
         />
       </View>
       <View style={styles.tasksContainer}>
-        {tasks.map((task) => <View style={styles.taskContainer}>
-          <Text style={styles.text} key={task.id}>{task.value}</Text>
-          <Button title='Complete' onPress={() => deleteTaskHandler(task)} />
-          <Button title='Update' onPress={() => updateTaskHandler(task)} />
-        </View>)}
-      </View>
-      <View style={styles.tasksContainer}>
-        {deleted.map((task) => <View style={styles.taskContainer}>
-          <Text style={styles.text} key={task.id}>{task.value}</Text>
-          <Button title='Undo' onPress={() => undoDeleteHandler(task)} />
-        </View>)}
+        <FlatList
+          data={tasks}
+          renderItem={task => {
+            return <View style={styles.taskContainer}>
+              <Text style={styles.text}>{task.item.value}</Text>
+              <Button title='Complete' onPress={() => deleteTaskHandler(task.item)} />
+              <Button title='Update' onPress={() => updateTaskHandler(task.item)} />
+            </View>
+          }}
+        />
       </View>
     </View>
   );
@@ -102,16 +101,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
     color: 'black',
-    borderWidth: 1,
+    borderWkeyth: 1,
     borderColor: '#cccccc',
     paddingHorizontal: 15,
     borderRadius: 5,
     marginBottom: 10,
   },
   input: {
-    borderWidth: 1,
+    borderWkeyth: 1,
     borderColor: '#cccccc',
-    width: '75%',
+    wkeyth: '75%',
     padding: 10,
     paddingHorizontal: 15,
     borderRadius: 5,
@@ -122,3 +121,11 @@ const styles = StyleSheet.create({
 });
 
 
+/*
+
+        {deleted.map((task) => <View style={styles.taskContainer}>
+            <Text style={styles.text} key={task.key}>{task.value}</Text>
+            <Button title='Undo' onPress={() => undoDeleteHandler(task)} />
+          </View>)}
+
+          */
